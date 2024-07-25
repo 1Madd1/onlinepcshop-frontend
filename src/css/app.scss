@@ -1,1 +1,22 @@
 // app global css in SCSS form
+.form-filedset {
+  border-radius: 5px
+}
+
+.form-filedset-legend {
+  border: 1px black solid;
+  margin-left: 1em;
+  padding: 0.2em 0.8em
+}
+
+.main-div {
+  max-width: 50%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.main-div div {
+  max-width: 90%;
+  margin-left: auto;
+  margin-right: auto;
+}

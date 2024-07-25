@@ -1,106 +1,135 @@
 <template>
-  <q-layout view="lHh Lpr lFf">
-    <q-header elevated>
+  <q-layout view="hhh lpR fff">
+
+    <q-header reveal elevated class="bg-primary text-white" height-hint="98">
       <q-toolbar>
-        <q-btn
-          flat
-          dense
-          round
-          icon="menu"
-          aria-label="Menu"
-          @click="toggleLeftDrawer"
-        />
+        <q-btn dense flat round icon="menu" @click="toggleLeftDrawer"/>
 
         <q-toolbar-title>
-          Quasar App
-        </q-toolbar-title>
+          <div class="flex justify-between">
+            <div>
+              <q-avatar>
+                <img src="https://cdn.quasar.dev/logo-v2/svg/logo-mono-white.svg">
+              </q-avatar>
+              Online PC Shop
+            </div>
+            <!--            <div>-->
+            <!--              <q-breadcrumbs active-color="white" separator-color="black">-->
+            <!--                <span v-for="(crumb, index) in breadcrumbs" :key="crumb">-->
+            <!--                  <q-breadcrumbs-el v-if="index === 0" label="Home" to="/" />-->
+            <!--                  <q-breadcrumbs-el v-else :label="' / ' + crumb" />-->
+            <!--                    TODO: use this code when there is more than one breadcrumb el with to route -->
+            <!--                  <q-breadcrumbs-el v-else-if="index == breadcrumbs.length - 1" :label="' / ' + crumb" />-->
+            <!--                  <q-breadcrumbs-el v-else :label="' / ' + crumb" :to="createPath(index)" />-->
+            <!--                </span>-->
+            <!--              </q-breadcrumbs>-->
+            <!--            </div>-->
+            <div>
+              <span v-if="checkLoggedInUser" style="padding-right: 1.5%">email: {{ getUserEmail() }}</span>
+              <span v-if="checkLoggedInAdmin" style="padding-right: 1.5%">ADMIN PANEL</span>
+              <q-btn label="Logout" color="white" text-color="black" class="q-mr-sm" @click="logout"/>
+              <q-btn label="Change password" color="white" text-color="black" @click="changePassword"/>
+            </div>
+          </div>
 
-        <div>Quasar v{{ $q.version }}</div>
+        </q-toolbar-title>
       </q-toolbar>
     </q-header>
 
-    <q-drawer
-      v-model="leftDrawerOpen"
-      show-if-above
-      bordered
-    >
-      <q-list>
-        <q-item-label
-          header
-        >
-          Essential Links
-        </q-item-label>
-
-        <EssentialLink
-          v-for="link in linksList"
-          :key="link.title"
-          v-bind="link"
-        />
-      </q-list>
+    <q-drawer show-if-above v-model="leftDrawerOpen" side="left" bordered>
+      <left-drawer-content/>
     </q-drawer>
 
     <q-page-container>
-      <router-view />
+      <router-view/>
     </q-page-container>
+
+    <d-s-change-password-dialog
+      :p-show="showChangePasswordDialog"
+      @dialog-closed="showPasswordDialogClosed"
+    />
+
   </q-layout>
 </template>
 
-<script setup>
-import { ref } from 'vue'
-import EssentialLink from 'components/EssentialLink.vue'
+<script>
+import LeftDrawerContent from "components/main-layout/LeftDrawerContent.vue";
+import {useSecurityStore} from "stores/securityStore";
+import DSChangePasswordDialog from "components/general/DSChangePasswordDialog.vue";
 
-defineOptions({
-  name: 'MainLayout'
-})
+export default {
+  components: {LeftDrawerContent, DSChangePasswordDialog},
+  data() {
+    return {
+      showChangePasswordDialog: false,
+      leftDrawerOpen: false,
+      securityStore: useSecurityStore(),
+      breadcrumbs: null,
+    }
+  },
+  computed: {
+    checkLoggedInUser() {
+      return this.securityStore.user !== null;
+    },
+    checkLoggedInAdmin() {
+      return this.securityStore.role === 'ROLE_ADMIN';
+    },
+  },
+  created() {
+    this.createBreadcrumbs();
+    if (!this.checkLoggedInUser) {
 
-const linksList = [
-  {
-    title: 'Docs',
-    caption: 'quasar.dev',
-    icon: 'school',
-    link: 'https://quasar.dev'
+    }
   },
-  {
-    title: 'Github',
-    caption: 'github.com/quasarframework',
-    icon: 'code',
-    link: 'https://github.com/quasarframework'
-  },
-  {
-    title: 'Discord Chat Channel',
-    caption: 'chat.quasar.dev',
-    icon: 'chat',
-    link: 'https://chat.quasar.dev'
-  },
-  {
-    title: 'Forum',
-    caption: 'forum.quasar.dev',
-    icon: 'record_voice_over',
-    link: 'https://forum.quasar.dev'
-  },
-  {
-    title: 'Twitter',
-    caption: '@quasarframework',
-    icon: 'rss_feed',
-    link: 'https://twitter.quasar.dev'
-  },
-  {
-    title: 'Facebook',
-    caption: '@QuasarFramework',
-    icon: 'public',
-    link: 'https://facebook.quasar.dev'
-  },
-  {
-    title: 'Quasar Awesome',
-    caption: 'Community Quasar projects',
-    icon: 'favorite',
-    link: 'https://awesome.quasar.dev'
-  }
-]
+  methods: {
+    createBreadcrumbs() {
+      if (this.$route.path === '/') {
+        this.breadcrumbs = [''];
+      } else {
+        this.breadcrumbs = this.$route.path.split("/");
+      }
+    },
+    getUserEmail() {
+      if (this.securityStore.user !== null) {
+        return this.securityStore.user.email;
+      }
+    },
+    createPath(endIndex) {
+      let path = '';
+      for (let i in this.breadcrumbs) {
+        if (i == 0) continue;
+        path += '/' + this.breadcrumbs[i];
+        if (i == endIndex) break;
+      }
+      return path;
+    },
+    toggleLeftDrawer() {
+      this.leftDrawerOpen = !this.leftDrawerOpen;
+    },
+    cleanUp() {
+      localStorage.removeItem("auth_token");
 
-const leftDrawerOpen = ref(false)
+      // clear all cookies
+      const cookies = document.cookie.split(";");
+      for (const element of cookies) {
+        const cookie = element;
+        const eqPos = cookie.indexOf("=");
+        const name = eqPos > -1 ? cookie.substring(0, eqPos) : cookie;
+        document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
+      }
+    },
+    logout() {
+      this.cleanUp();
+      this.securityStore.keycloak.logout();
 
-function toggleLeftDrawer () {
-  leftDrawerOpen.value = !leftDrawerOpen.value
+    },
+    changePassword() {
+      this.showChangePasswordDialog = !this.showChangePasswordDialog;
+    },
+    showPasswordDialogClosed() {
+      this.showChangePasswordDialog = false;
+    },
+  },
+
 }
 </script>

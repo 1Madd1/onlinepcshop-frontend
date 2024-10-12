@@ -16,7 +16,23 @@
 }
 
 .main-div div {
-  max-width: 90%;
+  max-width: 95%;
   margin-left: auto;
   margin-right: auto;
+}
+
+.motherboard-fieldset {
+  width: 90%;
+  margin-left: 5%;
+  margin-top: 5%;
+}
+
+.computer-fieldset {
+  width: 90%;
+  margin-left: 5%;
+  margin-bottom: 2%;
+}
+
+.amount-input {
+  width: 40%;
 }

@@ -20,12 +20,26 @@ export default {
       activeItem: "",
       menuListAdmin: [
         {
+          icon: 'home',
+          label: 'Home',
+          routeTo: "/",
+          subItems: [],
+        },
+        {
           icon: 'apartment',
-          label: 'Osnovni Podaci',
+          label: 'Admin Options',
           subItems: [
             { label: "Users", routeTo: "/users", id: uuidv4() },
-            // { label: "Stambene Zajednice", routeTo: "/osnovni-podaci/stambene-zajednice", id: uuidv4() },
-            // { label: "Vlasnici", routeTo: "/osnovni-podaci/vlasnici", id: uuidv4() },
+            { label: "Computers", routeTo: "/computers", id: uuidv4() },
+            { label: "Motherboards", routeTo: "/motherboards", id: uuidv4() },
+            { label: "Case Fans", routeTo: "/case-fans", id: uuidv4() },
+            { label: "Cpu's", routeTo: "/cpus", id: uuidv4() },
+            { label: "Gpu's", routeTo: "/gpus", id: uuidv4() },
+            { label: "Ram's", routeTo: "/rams", id: uuidv4() },
+            { label: "Storages", routeTo: "/storages", id: uuidv4() },
+            { label: "Computer Cases", routeTo: "/computer-cases", id: uuidv4() },
+            { label: "Coolers", routeTo: "/coolers", id: uuidv4() },
+            { label: "Power Supplies", routeTo: "/power-supplys", id: uuidv4() },
           ],
         },
         {

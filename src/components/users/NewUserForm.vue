@@ -3,7 +3,7 @@
     <fieldset class="form-filedset">
       <legend class="form-filedset-legend">{{ legendText }}
       </legend>
-      <q-form ref="agentForm" @submit.prevent="addOrUpdateButton.methodToInvoke">
+      <q-form ref="userForm" @submit.prevent="addOrUpdateButton.methodToInvoke">
 
           <div class="q-mb-sm q-pr-none q-pr-md-xs col-md-3 col-12">
             <q-input
@@ -131,7 +131,7 @@ export default {
     async addAndClearForm() {
       await this.addNewUser(true);
       this.clearData();
-      this.$refs.agentForm.reset();
+      this.$refs.userForm.reset();
     },
     async updateUser() {
       let user = await apiClient.request('put', '/user', null, this.user);

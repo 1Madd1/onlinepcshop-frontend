@@ -8,6 +8,7 @@ const instance  = axios.create({
 const apiClient = {
 
   request: async function(httpMethod, url, params, payload) {
+    // console.log(localStorage.getItem("auth_token"));
     try {
       payload = JSON.stringify(payload);
       const response = await instance.request({

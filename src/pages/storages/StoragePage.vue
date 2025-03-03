@@ -17,7 +17,8 @@
 
       <q-tab-panels v-model="tab" animated>
         <q-tab-panel name="storageInfo" class="q-pa-none">
-          <basic-info-storage :p-storage="storage" />
+          <basic-info-storage v-if="securityStore.role === 'ROLE_ADMIN'" :p-storage="storage" />
+          <storage-product-info v-else :p-storage="storage" />
         </q-tab-panel>
       </q-tab-panels>
     </q-card>
@@ -27,13 +28,16 @@
 import PageTitle from "components/general/PageTitle.vue";
 import apiClient from "src/lib/api-clients/api-client";
 import BasicInfoStorage from "src/views/storages/BasicInfoStorage.vue";
+import StorageProductInfo from "src/views/storages/StorageProductInfo.vue";
+import {useSecurityStore} from "stores/securityStore";
 
 export default {
-  components: {BasicInfoStorage, PageTitle},
+  components: {StorageProductInfo, BasicInfoStorage, PageTitle},
   data() {
     return {
       tab: "storageInfo",
       storage: null,
+      securityStore: useSecurityStore()
     }
   },
   computed: {

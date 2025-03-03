@@ -79,7 +79,6 @@
         </div>
 
         <div class="q-mb-sm q-pr-none q-pr-md-xs col-md-3 col-12">
-          <!--            :rules="rules.imageRule"-->
           <q-input
             v-model="gpu.image"
             outlined
@@ -111,7 +110,7 @@
   </div>
 </template>
 <script>
-import {Notify} from "quasar";
+import {date, Notify} from "quasar";
 import apiClient from "src/lib/api-clients/api-client";
 import {useSecurityStore} from "stores/securityStore";
 
@@ -130,6 +129,7 @@ export default {
           componentName: null,
           quantity: null,
           price: null,
+          dateOfCreation: null,
           currency: "RSD",
           pcieType: null,
           tdp: null,
@@ -152,7 +152,6 @@ export default {
       manufacturers: ["NVIDIA", "AMD"],
       pcieTypes: [],
       hasSale: false,
-      // Srediti da ima label value kommbinaciju
       saleTypes: [
         {
           label: "SALE 10% OFF",
@@ -238,7 +237,6 @@ export default {
     }
     apiClient.request('get', '/pcie-interface', null, null).then(
       result => {
-        console.log(result);
         for(let val of result) {
           this.pcieTypes.push(val.pcieType);
         }
@@ -248,6 +246,7 @@ export default {
   methods: {
     async addNewGpu(ignore = false) {
       this.checkSaleType();
+      this.gpu.dateOfCreation = date.formatDate(new Date(), 'YYYY-MM-DD');
       let gpu = await apiClient.request('post', '/gpu', null, this.gpu);
       if (gpu !== null) {
         Notify.create("Gpu " + gpu.componentName + " has been added!");
@@ -272,6 +271,7 @@ export default {
     clearData() {
       this.clearJsonObject(this.gpu);
       this.gpu.currency = "RSD";
+      this.hasSale = false;
     },
     turnNumbersToString(jsonObject) {
       for (const key in jsonObject) {

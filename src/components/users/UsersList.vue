@@ -36,7 +36,8 @@ export default {
         {name: "firstName", label: "First Name", field: "firstName", align: "left"},
         {name: "lastName", label: "Last Name", field: "lastName", align: "left"},
         {name: "email", label: "Email", field: "email", align: "left"},
-        {name: "telephone", label: "Telephone num.", field: "telephone", align: "left"},
+        {name: "telephone", label: "Telephone num.", field: "phoneNumber", align: "left"},
+        {name: "street", label: "Street", field: "street", align: "left"},
         {name: "operations", align: "right"},
       ],
     }

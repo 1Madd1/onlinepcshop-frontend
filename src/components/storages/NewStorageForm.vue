@@ -90,7 +90,6 @@
         </div>
 
         <div class="q-mb-sm q-pr-none q-pr-md-xs col-md-3 col-12">
-          <!--            :rules="rules.imageRule"-->
           <q-input
             v-model="storage.image"
             outlined
@@ -122,7 +121,7 @@
   </div>
 </template>
 <script>
-import {Notify} from "quasar";
+import {date, Notify} from "quasar";
 import apiClient from "src/lib/api-clients/api-client";
 import {useSecurityStore} from "stores/securityStore";
 
@@ -141,6 +140,7 @@ export default {
           componentName: null,
           quantity: null,
           price: null,
+          dateOfCreation: null,
           currency: "RSD",
           storageType: null,
           capacity: null,
@@ -235,10 +235,6 @@ export default {
   },
   computed: {
     updateButtonDisabled() {
-      console.log(this.pEditMode);
-      console.log(JSON.stringify(this.pStorage));
-      console.log(JSON.stringify(this.storage));
-      console.log(JSON.stringify(this.pStorage) === JSON.stringify(this.storage));
       return this.pEditMode && JSON.stringify(this.pStorage) === JSON.stringify(this.storage);
     },
     legendText() {
@@ -256,17 +252,16 @@ export default {
     }
     apiClient.request('get', '/storage-interface', null, null).then(
       result => {
-        console.log(result);
         for(let val of result) {
           this.storageTypes.push(val.storageType);
         }
       }
     );
-    // console.log(this.storageTypes);
   },
   methods: {
     async addNewStorage(ignore = false) {
       this.checkSaleType();
+      this.storage.dateOfCreation = date.formatDate(new Date(), 'YYYY-MM-DD');
       let storage = await apiClient.request('post', '/storage', null, this.storage);
       if (storage !== null) {
         Notify.create("Storage " + storage.componentName + " has been added!");
@@ -292,6 +287,7 @@ export default {
     clearData() {
       this.clearJsonObject(this.storage);
       this.storage.currency = "RSD";
+      this.hasSale = false;
     },
     turnNumbersToString(jsonObject) {
       for (const key in jsonObject) {

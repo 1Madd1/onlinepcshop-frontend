@@ -133,10 +133,6 @@
             label="Sale Type" />
         </div>
 
-<!--        <div class="q-mb-sm q-pr-none q-pr-md-xs col-md-3 col-12">-->
-<!--          <q-select outlined dense v-model="caseFan.manufacturer" :options="manufacturers" label="Manufacturer" />-->
-<!--        </div>-->
-
         <div>
           <q-btn :label="addOrUpdateButton.displayText" class="q-mr-sm q-ml-md" type="submit" color="primary" :disable="updateButtonDisabled"/>
           <q-btn v-if="!pEditMode" :label="addAndNewFormButtonDisplayText" class="q-mr-sm" type="button" color="primary" @click="addAndClearForm" />
@@ -146,7 +142,7 @@
   </div>
 </template>
 <script>
-import {Notify} from "quasar";
+import {date, Notify} from "quasar";
 import apiClient from "src/lib/api-clients/api-client";
 import {useSecurityStore} from "stores/securityStore";
 
@@ -165,6 +161,7 @@ export default {
           componentName: null,
           quantity: null,
           price: null,
+          dateOfCreation: null,
           currency: "RSD",
           fanSize: null,
           color: null,
@@ -256,9 +253,6 @@ export default {
         tdpRule: [
           (val) => val !== null && val.length > 0 || "Insert valid tdp!"
         ],
-        imageRule: [
-          (val) => val !== null && val.length > 0 || "Insert valid image link/url!"
-        ],
         saleTypeRule: [
           (val) => val !== null || "Insert valid sale type!"
         ],
@@ -286,6 +280,7 @@ export default {
   methods: {
     async addNewCaseFan(ignore = false) {
       this.checkSaleType();
+      this.caseFan.dateOfCreation = date.formatDate(new Date(), 'YYYY-MM-DD');
       let caseFan = await apiClient.request('post', '/case-fan', null, this.caseFan);
       if (caseFan !== null) {
         Notify.create("Case fan " + caseFan.componentName + " has been added!");
@@ -309,6 +304,7 @@ export default {
     },
     clearData() {
       this.clearJsonObject(this.caseFan);
+      this.hasSale = false;
       this.caseFan.currency = "RSD";
     },
     clearJsonObject(jsonObject) {

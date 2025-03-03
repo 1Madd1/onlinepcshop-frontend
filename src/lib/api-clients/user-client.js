@@ -1,5 +1,6 @@
 import axios from "axios";
 import {Notify} from "quasar";
+import {keycloak} from "boot/keycloak-init";
 
 const userClient = {
 
@@ -19,6 +20,16 @@ const userClient = {
         );
     });
   },
+
+  login: function () {
+    document.cookie = "kc_auth=starting";
+    keycloak.init({
+      onLoad: "login-required",
+      checkLoginIframe: false,
+      redirectUri: `${process.env.ROOT_APP_URL}`
+    });
+  },
+
 
   // getLoggedUser() {
   //   return new Promise((resolve, reject) => {

@@ -18,6 +18,7 @@ export default {
           id: null,
           computerName: null,
           price: null,
+          dateOfCreation: null,
           currency: "RSD",
           computerType: null,
           tdp: null,
@@ -35,7 +36,6 @@ export default {
     }
   },
   created() {
-    console.log(this.pComputer);
   }
 }
 </script>

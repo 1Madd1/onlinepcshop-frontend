@@ -1,11 +1,12 @@
 <template>
   <div v-if="checkCaseFan">
-    <page-title :p-title="'Case Fan - ' + caseFan.componentName" />
+    <page-title v-if="securityStore.role === 'ROLE_USER'" :p-title="'Case Fan - ' + caseFan.componentName" />
+    <page-title v-else :p-title="caseFan.componentName" />
     <q-card>
       <q-tabs
         v-model="tab"
         dense
-        class="text-grey"
+        class="text-grey bg-grey-4"
         active-color="primary"
         indicator-color="primary"
         align="justify"
@@ -17,7 +18,8 @@
 
       <q-tab-panels v-model="tab" animated>
         <q-tab-panel name="caseFanInfo" class="q-pa-none">
-          <basic-info-case-fan :p-case-fan="caseFan" />
+          <basic-info-case-fan v-if="securityStore.role === 'ROLE_ADMIN'" :p-case-fan="caseFan" />
+          <case-fan-product-info v-else :p-case-fan="caseFan" />
         </q-tab-panel>
       </q-tab-panels>
     </q-card>
@@ -27,13 +29,16 @@
 import PageTitle from "components/general/PageTitle.vue";
 import apiClient from "src/lib/api-clients/api-client";
 import BasicInfoCaseFan from "src/views/case-fans/BasicInfoCaseFan.vue";
+import {useSecurityStore} from "stores/securityStore";
+import CaseFanProductInfo from "src/views/case-fans/CaseFanProductInfo.vue";
 
 export default {
-  components: {BasicInfoCaseFan, PageTitle},
+  components: {CaseFanProductInfo, BasicInfoCaseFan, PageTitle},
   data() {
     return {
       tab: "caseFanInfo",
       caseFan: null,
+      securityStore: useSecurityStore(),
     }
   },
   computed: {

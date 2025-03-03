@@ -17,7 +17,8 @@
 
       <q-tab-panels v-model="tab" animated>
         <q-tab-panel name="motherboardInfo" class="q-pa-none">
-          <basic-info-motherboard :p-motherboard="motherboard" />
+          <basic-info-motherboard v-if="securityStore.role === 'ROLE_ADMIN'" :p-motherboard="motherboard" />
+          <motherboard-product-info v-else :p-motherboard="motherboard" />
         </q-tab-panel>
       </q-tab-panels>
     </q-card>
@@ -27,13 +28,16 @@
 import PageTitle from "components/general/PageTitle.vue";
 import apiClient from "src/lib/api-clients/api-client";
 import BasicInfoMotherboard from "src/views/motherboards/BasicInfoMotherboard.vue";
+import MotherboardProductInfo from "src/views/motherboards/MotherboardProductInfo.vue";
+import {useSecurityStore} from "stores/securityStore";
 
 export default {
-  components: {BasicInfoMotherboard, PageTitle},
+  components: {MotherboardProductInfo, BasicInfoMotherboard, PageTitle},
   data() {
     return {
       tab: "motherboardInfo",
       motherboard: null,
+      securityStore: useSecurityStore(),
     }
   },
   computed: {

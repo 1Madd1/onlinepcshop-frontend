@@ -10,7 +10,7 @@ const initializer = {
       const jwtAsJson = JSON.parse(atob(localStorage.getItem("auth_token").split(".")[1]));
       securityStore.setRole(jwtAsJson.roles[0])
       if (securityStore.role === "ROLE_USER") {
-        const user = await apiClient.request('get', '/user/me', null, null);
+        const user = await apiClient.request('login', '/user/me', null, null);
         securityStore.setUser(user);
         resolve(user);
       } else if (securityStore.role === "ROLE_ADMIN") {

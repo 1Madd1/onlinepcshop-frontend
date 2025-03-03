@@ -17,7 +17,8 @@
 
       <q-tab-panels v-model="tab" animated>
         <q-tab-panel name="powerSupplyInfo" class="q-pa-none">
-          <basic-info-power-supply :p-power-supply="powerSupply" />
+          <basic-info-power-supply v-if="securityStore.role === 'ROLE_ADMIN'" :p-power-supply="powerSupply" />
+          <power-supply-product-info v-else :p-power-supply="powerSupply" />
         </q-tab-panel>
       </q-tab-panels>
     </q-card>
@@ -27,13 +28,16 @@
 import PageTitle from "components/general/PageTitle.vue";
 import apiClient from "src/lib/api-clients/api-client";
 import BasicInfoPowerSupply from "src/views/power-supplys/BasicInfoPowerSupply.vue";
+import PowerSupplyProductInfo from "src/views/power-supplys/PowerSupplyProductInfo.vue";
+import {useSecurityStore} from "stores/securityStore";
 
 export default {
-  components: {BasicInfoPowerSupply, PageTitle},
+  components: {PowerSupplyProductInfo, BasicInfoPowerSupply, PageTitle},
   data() {
     return {
       tab: "powerSupplyInfo",
       powerSupply: null,
+      securityStore: useSecurityStore(),
     }
   },
   computed: {

@@ -223,7 +223,6 @@
         </div>
 
         <div class="q-mb-sm q-pr-md-xs col-md-3 col-12">
-          <!--            :rules="rules.imageRule"-->
           <q-input
             v-model="computer.image"
             outlined
@@ -255,7 +254,7 @@
   </div>
 </template>
 <script>
-import {Notify} from "quasar";
+import {date, Notify} from "quasar";
 import apiClient from "src/lib/api-clients/api-client";
 import {useSecurityStore} from "stores/securityStore";
 
@@ -273,6 +272,7 @@ export default {
           id: null,
           computerName: null,
           price: null,
+          dateOfCreation: null,
           currency: "RSD",
           quantity: null,
           computerType: null,
@@ -286,7 +286,6 @@ export default {
           coolerId: null,
           motherboardId: null,
           powerSupplyId: null,
-          purchased: false,
         }
       }
     }
@@ -295,7 +294,6 @@ export default {
     "computer.computerType"(newValue, oldValue) {
       if (newValue !== oldValue) {
       //   reset metoda
-        console.log("ulaz u computer type watcher");
         this.storageFormDisabled = false;
         this.caseFanFormDisabled = false;
         this.ramFormDisabled = false;
@@ -341,7 +339,6 @@ export default {
       if (newValue === null) {
         return;
       }
-      console.log(newValue);
       this.storageFormDisabled = false;
       this.caseFanFormDisabled = false;
       this.ramFormDisabled = false;
@@ -353,7 +350,6 @@ export default {
       this.fetchedStorages = [];
       this.powerSupplys = [];
       if (!this.pEditMode || !this.onEditLoad) {
-        console.log("motherboardId ulaz nakon provere");
         this.rams = [];
         this.storages = [];
         this.caseFans = [];
@@ -393,19 +389,15 @@ export default {
         return m.value.id === this.computer.motherboardId.value.id;
       });
       if (!newValue.value.includesCooler) {
-        console.log("ucitaj coolers");
         this.loadCoolers();
       }
       if (newValue.value.includesIntegratedGpu) {
-        console.log("ucitaj rams");
         this.loadRams(result[0].value.memoryType);
       } else {
-        console.log("ucitaj gpus");
         this.loadGpus(this.computer.motherboardId.value.id);
       }
     },
     "computer.gpuId"(newValue, oldValue) {
-      // Dodati da fetch-uje i case fans i power supplies
       if (newValue === null) {
         return;
       }
@@ -434,8 +426,6 @@ export default {
         this.loadStorages(this.computer.motherboardId.value.id);
     },
     "rams.length"(newValue, oldValue) {
-      console.log("Rams length " + newValue);
-      console.log("Storages length " + this.storages.length);
       if (this.storages.length > 0 && newValue > 0) {
         if (this.computer.computerType === "BUSINESS") {
           this.loadPowerSupplys();
@@ -456,7 +446,6 @@ export default {
       this.checkComputerRamAmount();
     },
     "storages.length"(newValue, oldValue) {
-      console.log(newValue);
       if (this.rams.length > 0 && newValue > 0) {
         if (this.computer.computerType === "BUSINESS") {
           this.loadPowerSupplys();
@@ -558,9 +547,6 @@ export default {
       fetchedCaseFans: [],
       storages: [],
       fetchedStorages: [],
-      ramsToBeRemoved: [],
-      storagesToBeRemoved: [],
-      caseFansToBeRemoved: [],
       powerSupplys: [],
       ramAmountLimit: 0,
       storageAmountLimit: 0,
@@ -602,20 +588,11 @@ export default {
         gpuRule: [
           (val) => val !== null || "Insert valid gpu!"
         ],
-        ramRule: [
-          (val) => val !== null || "Insert valid ram!"
-        ],
         ramQuantityRule: [
           (val) => val !== null && val > 0 && val < 5 || "Insert valid ram amount!"
         ],
-        storageRule: [
-          (val) => val !== null || "Insert valid storage!"
-        ],
         storageQuantityRule: [
           (val) => val !== null && val > 0 && val < 5 || "Insert valid storage amount!"
-        ],
-        caseFanRule: [
-          (val) => val !== null || "Insert valid case fan!"
         ],
         caseFanQuantityRule: [
           (val) => val !== null && val > 0 && val < 4 || "Insert valid case fan amount!"
@@ -634,7 +611,6 @@ export default {
       return this.pEditMode ? "Computer info" : "Creating New Computer";
     },
     checkFetchedCaseFansLength() {
-      console.log(this.fetchedCaseFans);
       return this.fetchedCaseFans.length !== 0;
     }
   },
@@ -647,6 +623,7 @@ export default {
       }
       this.onEditLoad = true;
       this.turnNumbersToString(this.computer);
+      // Srediti da sve uzima putem jednog api poziva
       let tempComputerCase = await apiClient.request('get', '/computer-case/' + this.computer.computerCaseId, null, null);
       let tempMotherboard = await apiClient.request('get', '/motherboard/' + this.computer.motherboardId, null, null);
       let tempCpu = await apiClient.request('get', '/cpu/' + this.computer.cpuId, null, null);
@@ -659,13 +636,6 @@ export default {
       if (this.computer.coolerId !== null && this.computer.coolerId !== "") {
         tempCooler = await apiClient.request('get', '/cooler/' + this.computer.coolerId, null, null);
       }
-      console.log(tempComputerCase);
-      console.log(tempMotherboard);
-      console.log(tempCpu);
-      console.log(tempPowerSupply);
-      console.log(tempGpu);
-      console.log(tempCooler);
-      console.log(this.computer);
       if (this.computer.computerType === "BUSINESS") {
         this.ramAmountLimit = 2;
         this.storageAmountLimit = 2;
@@ -684,40 +654,24 @@ export default {
         this.fetchComputerCases(100000.00);
         this.fetchMotherboards(100000.00);
       }
-      // this.loadCpus(tempMotherboard.socketType);
-      // if (!tempCpu.includesCooler) {
-      //   this.loadCoolers();
-      // }
-      // if (tempCpu.includesIntegratedGpu) {
-      //   console.log("load1");
-      //   this.loadRams(tempMotherboard.memoryType);
-      // } else {
-      //   console.log("load2");
-      //   this.loadGpus(tempMotherboard.id);
-      //   this.loadRams(tempMotherboard.memoryType);
-      // }
       let tempRams = [];
       let tempStorages = [];
       let tempCaseFans = [];
       await apiClient.request('get', '/ram/find-by-computer-id?computerId=' + this.computer.id, null, null).then(
         result => {
-          console.log(result);
           tempRams = result;
         }
       );
       await apiClient.request('get', '/storage/find-by-computer-id?computerId=' + this.computer.id, null, null).then(
         result => {
-          console.log(result);
           tempStorages = result;
         }
       );
       await apiClient.request('get', '/case-fan/find-by-computer-id?computerId=' + this.computer.id, null, null).then(
         result => {
-          console.log(result);
           tempCaseFans = result;
         }
       );
-      console.log(tempCaseFans)
       this.computer.computerCaseId = {
         label: tempComputerCase.componentName,
         value: tempComputerCase
@@ -747,9 +701,7 @@ export default {
         value: tempPowerSupply
       }
       for (const r of tempRams) {
-        console.log(r);
         let quantity = await apiClient.request('get', '/ram/find-quantity-by-ram-id-and-computer-id?ramId=' + r.id + '&computerId=' + this.computer.id, null, null);
-        console.log(quantity);
         const assignedRam = {
           tempId: this.generateRandomUUID(),
           componentName: r.componentName,
@@ -762,9 +714,7 @@ export default {
         this.rams.push(assignedRam);
       }
       for (const s of tempStorages) {
-        console.log(s);
         let quantity = await apiClient.request('get', '/storage/find-quantity-by-storage-id-and-computer-id?storageId=' + s.id + '&computerId=' + this.computer.id, null, null);
-        console.log(quantity);
         const assignedStorage = {
           tempId: this.generateRandomUUID(),
           componentName: s.componentName,
@@ -777,9 +727,7 @@ export default {
         this.storages.push(assignedStorage);
       }
       for (const cf of tempCaseFans) {
-        console.log(cf);
         let quantity = await apiClient.request('get', '/case-fan/find-quantity-by-case-fan-id-and-computer-id?caseFanId=' + cf.id + '&computerId=' + this.computer.id, null, null);
-        console.log(quantity);
         const assignedCaseFan = {
           tempId: this.generateRandomUUID(),
           componentName: cf.componentName,
@@ -797,11 +745,16 @@ export default {
   methods: {
     async addNewComputer(ignore = false) {
       this.checkSaleType();
-      console.log('Aloo')
-      console.log(this.computer);
       this.computer.tdp = this.calculateTotalWattage();
       this.computer.price = this.calculateTotalPrice();
-      console.log(this.computer);
+      this.computer.dateOfCreation = date.formatDate(new Date(), 'YYYY-MM-DD');
+      if (!this.checkComputerComponentsValidation) {
+        Notify.create({
+          color: "negative",
+          icon: "warning",
+          message: "Make sure all minimum components have been added (computer case, motherboard, cpu, power supply)!"
+        });
+      }
       const computerCreationRequest = {
         computer: this.createTempComputer(),
         computerRamList: this.rams,
@@ -810,7 +763,7 @@ export default {
       }
       let computer = await apiClient.request('post', '/computer', null, computerCreationRequest);
       if (computer !== null) {
-        Notify.create("Computer " + this.computer.componentName + " has been added!");
+        Notify.create("Computer " + this.computer.computerName + " has been added!");
         if (!ignore) {
           this.$router.go(-1);
         }
@@ -823,18 +776,18 @@ export default {
     },
     async updateComputer() {
       this.checkSaleType();
+      this.computer.tdp = this.calculateTotalWattage();
+      this.computer.price = this.calculateTotalPrice();
       const computerCreationRequest = {
-        computer: this.computer,
+        computer: this.createTempComputer(),
         computerRamList: this.rams,
         computerStorageList: this.storages,
         computerCaseFanList: this.caseFans,
-        computerRamsToBeRemovedList: this.ramsToBeRemoved,
-        computerStoragesToBeRemovedList: this.storagesToBeRemoved,
-        computerCaseFansToBeRemovedList: this.caseFansToBeRemoved
       }
-      let computer = await apiClient.request('put', '/computer', null, this.computer);
+      computerCreationRequest.computer.id = this.computer.id;
+      let computer = await apiClient.request('put', '/computer', null, computerCreationRequest);
       if (computer !== null) {
-        Notify.create("Computer " + this.computer.componentName + " has been edited!");
+        Notify.create("Computer " + this.computer.computerName + " has been edited!");
         this.$router.go(-1);
       }
     },
@@ -850,8 +803,6 @@ export default {
         Notify.create("RAM must be selected!");
         return;
       }
-      console.log(this.ram);
-      this.ramsToBeRemoved = this.ramsToBeRemoved.filter(r => r.ramId !== this.ram.value.id);
       const assignedRam = {
         tempId: this.generateRandomUUID(),
         componentName: this.ram.value.componentName,
@@ -864,20 +815,14 @@ export default {
       this.rams.push(assignedRam);
       this.ram = '';
       this.checkComputerRamAmount();
-      console.log(this.ramsToBeRemoved);
-      console.log(this.rams);
     },
     unassignRam(ramId) {
       let result = this.rams.filter(r => r.tempId === ramId);
-      console.log(result);
       let tempObj = {
         ramId: result[0].ramId,
         computerId: this.computer.id
       }
-      this.ramsToBeRemoved.push(tempObj);
       this.rams = this.rams.filter(ram => ram.tempId !== ramId);
-      console.log(this.ramsToBeRemoved);
-      console.log(this.rams);
       this.checkComputerRamAmount();
     },
     assignStorage() {
@@ -892,8 +837,6 @@ export default {
         Notify.create("Storage must be selected!");
         return;
       }
-      console.log(this.storage);
-      this.storagesToBeRemoved = this.storagesToBeRemoved.filter(s => s.storageId !== this.storage.value.id);
       const assignedStorage = {
         tempId: this.generateRandomUUID(),
         componentName: this.storage.value.componentName,
@@ -906,8 +849,6 @@ export default {
       this.storages.push(assignedStorage);
       this.storage = '';
       this.checkComputerStorageAmount();
-      console.log(this.storagesToBeRemoved);
-      console.log(this.storages);
     },
     unassignStorage(storageId) {
       let result = this.storages.filter(s => s.tempId === storageId);
@@ -915,10 +856,7 @@ export default {
         storageId: result[0].storageId,
         computerId: this.computer.id
       }
-      this.storagesToBeRemoved.push(tempObj);
       this.storages = this.storages.filter(storage => storage.tempId !== storageId);
-      console.log(this.storagesToBeRemoved);
-      console.log(this.storages);
       this.checkComputerStorageAmount();
     },
     assignCaseFan() {
@@ -933,8 +871,6 @@ export default {
         Notify.create("Case fan must be selected!");
         return;
       }
-      console.log(this.caseFan);
-      this.caseFansToBeRemoved = this.caseFansToBeRemoved.filter(cf => cf.caseFanId !== this.caseFan.value.id);
       const assignedCaseFan = {
         tempId: this.generateRandomUUID(),
         componentName: this.caseFan.value.componentName,
@@ -947,8 +883,6 @@ export default {
       this.caseFans.push(assignedCaseFan);
       this.caseFan = '';
       this.checkComputerCaseFanAmount();
-      console.log(this.caseFansToBeRemoved);
-      console.log(this.caseFans);
     },
     unassignCaseFan(caseFanId) {
       let result = this.caseFans.filter(cf => cf.tempId === caseFanId);
@@ -956,17 +890,13 @@ export default {
         caseFanId: result[0].caseFanId,
         computerId: this.computer.id
       }
-      this.caseFansToBeRemoved.push(tempObj);
       this.caseFans = this.caseFans.filter(caseFan => caseFan.tempId !== caseFanId);
-      console.log(this.caseFansToBeRemoved);
-      console.log(this.caseFans);
       this.checkComputerCaseFanAmount();
     },
     fetchComputerCases(maxPrice) {
       this.computerCases = [];
       apiClient.request('get', '/computer-case/find-by-max-price?maxPrice=' + maxPrice, null, null).then(
         result => {
-          console.log(result);
           for(let val of result) {
             const tempObj = {
               label: val.componentName,
@@ -981,7 +911,6 @@ export default {
       this.motherboards = []
       apiClient.request('get', '/motherboard/find-by-max-price-and-storage-interface-limit?maxPrice=' + maxPrice + '&storageInterfaceLimit=' + this.storageAmountLimit, null, null).then(
         result => {
-          console.log(result);
           for(let val of result) {
             const tempObj = {
               label: val.componentName,
@@ -997,7 +926,6 @@ export default {
       apiClient.request('get', '/cpu/find-by-requested-params?maxPrice=' + maxPrice + '&includesCooler='
         + includesCooler + '&includesIntegratedGpu=' + includesIntegratedGpu + '&socketType=' + socketType, null, null).then(
         result => {
-          console.log(result);
           for(let val of result) {
             const tempObj = {
               label: val.componentName,
@@ -1012,7 +940,6 @@ export default {
       this.gpus = [];
       apiClient.request('get', '/gpu/find-by-max-price-and-motherboard-id?maxPrice=' + maxPrice + '&motherboardId=' + motherboardId, null, null).then(
         result => {
-          console.log(result);
           for(let val of result) {
             const tempObj = {
               label: val.componentName,
@@ -1027,7 +954,6 @@ export default {
       this.fetchedRams = [];
       apiClient.request('get', '/ram/find-by-max-price-and-memory-type?maxPrice=' + maxPrice + '&memoryType=' + memoryType, null, null).then(
         result => {
-          console.log(result);
           for(let val of result) {
             const tempObj = {
               label: val.componentName,
@@ -1042,7 +968,6 @@ export default {
       this.fetchedStorages = [];
       apiClient.request('get', '/storage/find-by-max-price-and-motherboard-id?maxPrice=' + maxPrice + '&motherboardId=' + motherboardId, null, null).then(
         result => {
-          console.log(result);
           for(let val of result) {
             const tempObj = {
               label: val.componentName,
@@ -1052,13 +977,11 @@ export default {
           }
         }
       );
-      console.log(this.fetchedStorages.length !== 0);
     },
     fetchCoolers(maxPrice) {
       this.coolers = [];
       apiClient.request('get', '/cooler/find-by-max-price?maxPrice=' + maxPrice, null, null).then(
         result => {
-          console.log(result);
           for(let val of result) {
             const tempObj = {
               label: val.componentName,
@@ -1073,7 +996,6 @@ export default {
       this.fetchedCaseFans = [];
       apiClient.request('get', '/case-fan/find-by-max-price?maxPrice=' + maxPrice, null, null).then(
         result => {
-          console.log(result);
           for(let val of result) {
             const tempObj = {
               label: val.componentName,
@@ -1083,13 +1005,11 @@ export default {
           }
         }
       );
-      console.log(this.fetchedCaseFans.length !== 0);
     },
     fetchPowerSupplys(maxPrice) {
       this.powerSupplys = [];
       apiClient.request('get', '/power-supply/find-by-max-price-and-wattage?maxPrice=' + maxPrice + '&minWattage=' + this.calculateTotalWattage(), null, null).then(
         result => {
-          console.log(result);
           for(let val of result) {
             const tempObj = {
               label: val.componentName,
@@ -1144,7 +1064,6 @@ export default {
       }
     },
     loadCaseFans() {
-      console.log("Load cf");
       if (this.computer.computerType === "BUSINESS") {
 
       } else if (this.computer.computerType === "NORMAL") {
@@ -1164,6 +1083,7 @@ export default {
     },
     clearData() {
       this.clearJsonObject(this.computer);
+      this.hasSale = false;
       this.computer.currency = "RSD";
     },
     calculateTotalWattage() {
@@ -1180,7 +1100,6 @@ export default {
           wattage += this.computer.gpuId.value.tdp;
         }
         for (let val of this.rams) {
-          console.log(val);
           wattage += val.tdp * val.quantity;
         }
         for (let val of this.storages) {
@@ -1190,9 +1109,11 @@ export default {
           wattage += val.tdp * val.quantity;
         }
       }
-      console.log(this.computer);
-      console.log(wattage);
       return wattage;
+    },
+    checkComputerComponentsValidation(){
+      return this.computer.computerCaseId !== null && this.computer.cpuId !== null
+        && this.computer.motherboardId !== null && this.computer.powerSupplyId !== null
     },
     calculateTotalPrice() {
       let price = 0;
@@ -1217,7 +1138,6 @@ export default {
           price += val.price * val.quantity;
         }
       }
-      console.log(price);
       return price;
     },
     createTempComputer() {
@@ -1238,7 +1158,6 @@ export default {
         coolerId: this.computer.coolerId === null ? null : this.computer.coolerId.value.id,
         motherboardId: this.computer.motherboardId.value.id,
         powerSupplyId: this.computer.powerSupplyId.value.id,
-        purchased: this.computer.purchased
       }
     },
     turnNumbersToString(jsonObject) {
@@ -1270,7 +1189,6 @@ export default {
       let counter = 0;
       for (const ram of this.rams) {
         counter += Number(ram.quantity);
-        console.log(counter);
         if (counter >= this.ramAmountLimit) {
           this.ramFormDisabled = true;
         } else {
@@ -1282,7 +1200,6 @@ export default {
       let counter = 0;
       for (const storage of this.storages) {
         counter += Number(storage.quantity);
-        console.log(counter);
         if (counter >= this.storageAmountLimit) {
           this.storageFormDisabled = true;
         } else {

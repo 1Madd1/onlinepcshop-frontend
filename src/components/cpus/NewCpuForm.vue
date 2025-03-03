@@ -110,7 +110,6 @@
         </div>
 
         <div class="q-mb-sm q-pr-none q-pr-md-xs col-md-3 col-12">
-          <!--            :rules="rules.imageRule"-->
           <q-input
             v-model="cpu.image"
             outlined
@@ -138,10 +137,6 @@
             <q-checkbox v-model="cpu.includesIntegratedGpu" label="Includes Integrated GPU" color="teal" />
         </div>
 
-<!--        <div class="q-mb-sm q-pr-none q-pr-md-xs col-md-3 col-12">-->
-<!--          <q-select outlined dense v-model="caseFan.manufacturer" :options="manufacturers" label="Manufacturer" />-->
-<!--        </div>-->
-
         <div>
           <q-btn :label="addOrUpdateButton.displayText" class="q-mr-sm q-ml-md" type="submit" color="primary" :disable="updateButtonDisabled"/>
           <q-btn v-if="!pEditMode" :label="addAndNewFormButtonDisplayText" class="q-mr-sm" type="button" color="primary" @click="addAndClearForm" />
@@ -151,7 +146,7 @@
   </div>
 </template>
 <script>
-import {Notify} from "quasar";
+import {date, Notify} from "quasar";
 import apiClient from "src/lib/api-clients/api-client";
 import {useSecurityStore} from "stores/securityStore";
 
@@ -170,6 +165,7 @@ export default {
           componentName: null,
           quantity: null,
           price: null,
+          dateOfCreation: null,
           currency: "RSD",
           socketType: null,
           coreCount: null,
@@ -293,6 +289,7 @@ export default {
   methods: {
     async addNewCpu(ignore = false) {
       this.checkSaleType();
+      this.cpu.dateOfCreation = date.formatDate(new Date(), 'YYYY-MM-DD');
       let cpu = await apiClient.request('post', '/cpu', null, this.cpu);
       if (cpu !== null) {
         Notify.create("Cpu " + cpu.componentName + " has been added!");
@@ -317,6 +314,9 @@ export default {
     clearData() {
       this.clearJsonObject(this.cpu);
       this.cpu.currency = "RSD";
+      this.hasSale = false;
+      this.cpu.includesIntegratedGpu = false;
+      this.cpu.includesCooler = false;
     },
     turnNumbersToString(jsonObject) {
       for (const key in jsonObject) {

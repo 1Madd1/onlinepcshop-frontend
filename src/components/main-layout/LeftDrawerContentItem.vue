@@ -50,7 +50,7 @@ export default {
       default: ""
     },
   },
-  emits: ["itemClicked"],
+  emits: ["itemClicked", "subItemClicked"],
   data() {
     return {
       active: null,
@@ -69,6 +69,7 @@ export default {
       this.$emit("itemClicked", this.pMenuItem.label);
     },
     subItemClicked(activeSubItemId) {
+      this.$emit("subItemClicked");
       this.activeSubItem = activeSubItemId;
     }
   }

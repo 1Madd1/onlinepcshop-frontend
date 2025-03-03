@@ -17,7 +17,8 @@
 
       <q-tab-panels v-model="tab" animated>
         <q-tab-panel name="computerInfo" class="q-pa-none">
-          <basic-info-computer :p-computer="computer" />
+          <basic-info-computer v-if="securityStore.role === 'ROLE_ADMIN'" :p-computer="computer" />
+          <computer-product-info v-else :p-computer="computer" />
         </q-tab-panel>
       </q-tab-panels>
     </q-card>
@@ -27,13 +28,16 @@
 import PageTitle from "components/general/PageTitle.vue";
 import apiClient from "src/lib/api-clients/api-client";
 import BasicInfoComputer from "src/views/computers/BasicInfoComputer.vue";
+import ComputerProductInfo from "src/views/computers/ComputerProductInfo.vue";
+import {useSecurityStore} from "stores/securityStore";
 
 export default {
-  components: {BasicInfoComputer, PageTitle},
+  components: {ComputerProductInfo, BasicInfoComputer, PageTitle},
   data() {
     return {
       tab: "computerInfo",
       computer: null,
+      securityStore: useSecurityStore(),
     }
   },
   computed: {

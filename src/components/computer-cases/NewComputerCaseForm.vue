@@ -78,7 +78,6 @@
         </div>
 
         <div class="q-mb-sm q-pr-none q-pr-md-xs col-md-3 col-12">
-          <!--            :rules="rules.imageRule"-->
           <q-input
             v-model="computerCase.image"
             outlined
@@ -110,7 +109,7 @@
   </div>
 </template>
 <script>
-import {Notify} from "quasar";
+import {date, Notify} from "quasar";
 import apiClient from "src/lib/api-clients/api-client";
 import {useSecurityStore} from "stores/securityStore";
 
@@ -129,6 +128,7 @@ export default {
           componentName: null,
           quantity: null,
           price: null,
+          dateOfCreation: null,
           currency: "RSD",
           caseType: null,
           color: null,
@@ -220,9 +220,6 @@ export default {
         colorRule: [
           (val) => val !== null && val.length > 0 || "Insert valid color!"
         ],
-        imageRule: [
-          (val) => val !== null && val.length > 0 || "Insert valid image link/url!"
-        ],
       },
     }
   },
@@ -231,7 +228,6 @@ export default {
       return this.pEditMode && JSON.stringify(this.pComputerCase) === JSON.stringify(this.computerCase);
     },
     legendText() {
-      // Srediti kod ostalih komponenata da pise veliko slovo
       return this.pEditMode ? "Computer Case Info" : "Creating New Computer Case";
     }
   },
@@ -248,6 +244,7 @@ export default {
   methods: {
     async addNewComputerCase(ignore = false) {
       this.checkSaleType();
+      this.computerCase.dateOfCreation = date.formatDate(new Date(), 'YYYY-MM-DD');
       let computerCase = await apiClient.request('post', '/computer-case', null, this.computerCase);
       if (computerCase !== null) {
         Notify.create("Computer case " + computerCase.componentName + " has been added!");
@@ -272,6 +269,7 @@ export default {
     clearData() {
       this.clearJsonObject(this.computerCase);
       this.computerCase.currency = "RSD";
+      this.hasSale = false;
     },
     turnNumbersToString(jsonObject) {
       for (const key in jsonObject) {

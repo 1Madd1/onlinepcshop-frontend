@@ -19,6 +19,7 @@ export default {
           componentName: null,
           quantity: null,
           price: null,
+          dateOfCreation: null,
           currency: "RSD",
           storageType: null,
           capacity: null,

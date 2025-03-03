@@ -89,7 +89,6 @@
         </div>
 
         <div class="q-mb-sm q-pr-none q-pr-md-xs col-md-3 col-12">
-          <!--            :rules="rules.imageRule"-->
           <q-input
             v-model="motherboard.image"
             outlined
@@ -188,7 +187,7 @@
   </div>
 </template>
 <script>
-import {Notify} from "quasar";
+import {date, Notify} from "quasar";
 import apiClient from "src/lib/api-clients/api-client";
 import {useSecurityStore} from "stores/securityStore";
 
@@ -207,6 +206,7 @@ export default {
           componentName: null,
           quantity: null,
           price: null,
+          dateOfCreation: null,
           currency: "RSD",
           socketType: null,
           memoryType: null,
@@ -316,7 +316,6 @@ export default {
       return this.pEditMode && JSON.stringify(this.pMotherboard) === JSON.stringify(this.motherboard);
     },
     legendText() {
-      // Srediti kod ostalih komponenata da pise veliko slovo
       return this.pEditMode ? "Motherboard Info" : "Creating New Motherboard";
     },
   },
@@ -327,10 +326,10 @@ export default {
           this.hasSale = true;
         }
       }
+      // Srediti da sve uzima putem jedno api poziva
       this.turnNumbersToString(this.motherboard);
       apiClient.request('get', '/storage-interface/find-all-by-motherboard-id?motherboardId=' + this.motherboard.id, null, null).then(
         result => {
-          console.log(result);
           for(let val of result) {
             const tempObj = {
               tempId: this.generateRandomUUID(),
@@ -343,7 +342,6 @@ export default {
       );
       apiClient.request('get', '/pcie-interface/find-all-by-motherboard-id?motherboardId=' + this.motherboard.id, null, null).then(
         result => {
-          console.log(result);
           for(let val of result) {
             const tempObj = {
               tempId: this.generateRandomUUID(),
@@ -357,7 +355,6 @@ export default {
     }
     apiClient.request('get', '/pcie-interface', null, null).then(
       result => {
-        console.log(result);
         for(let val of result) {
           const tempObj = {
             label: val.pcieType,
@@ -369,7 +366,6 @@ export default {
     );
     apiClient.request('get', '/storage-interface', null, null).then(
       result => {
-        console.log(result);
         for(let val of result) {
           const tempObj = {
             label: val.storageType,
@@ -383,12 +379,12 @@ export default {
   methods: {
     async addNewMotherboard(ignore = false) {
       this.checkSaleType();
+      this.motherboard.dateOfCreation = date.formatDate(new Date(), 'YYYY-MM-DD');
       const motherboardWithInterfacesRequest = {
         motherboard: this.motherboard,
         pcieInterfaceList: this.pcieInterfaces,
         storageInterfaceList: this.storageInterfaces
       }
-      console.log(motherboardWithInterfacesRequest);
       let motherboard = await apiClient.request('post', '/motherboard', null, motherboardWithInterfacesRequest);
       if (motherboard !== null) {
         Notify.create("Motherboard " + this.motherboard.componentName + " has been added!");
@@ -479,6 +475,7 @@ export default {
     clearData() {
       this.clearJsonObject(this.motherboard);
       this.motherboard.currency = "RSD";
+      this.hasSale = false;
     },
     turnNumbersToString(jsonObject) {
       for (const key in jsonObject) {

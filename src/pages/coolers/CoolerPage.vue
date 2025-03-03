@@ -17,7 +17,8 @@
 
       <q-tab-panels v-model="tab" animated>
         <q-tab-panel name="coolerInfo" class="q-pa-none">
-          <basic-info-cooler :p-cooler="cooler" />
+          <basic-info-cooler v-if="securityStore.role === 'ROLE_ADMIN'" :p-cooler="cooler" />
+          <cooler-product-info v-else :p-cooler="cooler" />
         </q-tab-panel>
       </q-tab-panels>
     </q-card>
@@ -27,13 +28,16 @@
 import PageTitle from "components/general/PageTitle.vue";
 import apiClient from "src/lib/api-clients/api-client";
 import BasicInfoCooler from "src/views/coolers/BasicInfoCooler.vue";
+import CoolerProductInfo from "src/views/coolers/CoolerProductInfo.vue";
+import {useSecurityStore} from "stores/securityStore";
 
 export default {
-  components: {BasicInfoCooler, PageTitle},
+  components: {CoolerProductInfo, BasicInfoCooler, PageTitle},
   data() {
     return {
       tab: "coolerInfo",
       cooler: null,
+      securityStore: useSecurityStore(),
     }
   },
   computed: {

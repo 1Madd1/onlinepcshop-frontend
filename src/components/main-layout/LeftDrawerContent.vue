@@ -1,7 +1,7 @@
 <template>
   <q-list>
     <template v-for="(menuItem, index) in activeMenu" :key="index">
-      <left-drawer-content-item :p-menu-item="menuItem" :p-active="activeItem" @item-clicked="itemClicked"/>
+      <left-drawer-content-item :p-menu-item="menuItem" :p-active="activeItem" @sub-item-clicked="subItemClicked" @item-clicked="itemClicked"/>
     </template>
   </q-list>
 </template>
@@ -13,18 +13,13 @@ import {useSecurityStore} from "stores/securityStore";
 
 export default {
   components: {LeftDrawerContentItem},
+  emits: ["itemClicked", "subItemClicked"],
   data() {
     return {
       drawer: false,
       securityStore: useSecurityStore(),
       activeItem: "",
       menuListAdmin: [
-        {
-          icon: 'home',
-          label: 'Home',
-          routeTo: "/",
-          subItems: [],
-        },
         {
           icon: 'apartment',
           label: 'Admin Options',
@@ -42,56 +37,51 @@ export default {
             { label: "Power Supplies", routeTo: "/power-supplys", id: uuidv4() },
           ],
         },
-        {
-          icon: 'settings',
-          label: 'Settings',
-          routeTo: "",
-          subItems: [],
-        },
-        {
-          icon: 'help',
-          label: 'Help',
-          routeTo: "",
-          subItems: [],
-        }
       ],
       menuListUser: [
         {
-          icon: 'apartment',
-          label: 'Osnovni Podaci',
+          icon: 'computer',
+          label: 'Computers',
           subItems: [
-            { label: "Države", routeTo: "/osnovni-podaci/drzave", id: uuidv4() },
-            { label: "Stambene Zajednice", routeTo: "/osnovni-podaci/stambene-zajednice", id: uuidv4() },
-            { label: "Vlasnici", routeTo: "/osnovni-podaci/vlasnici", id: uuidv4() },
+            { label: "Business Computers", routeTo: "/computers-cards-business", id: uuidv4() },
+            { label: "Normal Computers", routeTo: "/computers-cards-normal", id: uuidv4() },
+            { label: "Gaming Computers", routeTo: "/computers-cards-gaming", id: uuidv4() },
           ],
         },
         {
-          icon: 'settings',
-          label: 'Settings',
-          routeTo: "",
-          subItems: [],
+          icon: 'memory',
+          label: 'Components',
+          subItems: [
+            { label: "Motherboards", routeTo: "/motherboards-cards", id: uuidv4() },
+            { label: "Case Fans", routeTo: "/case-fans-cards", id: uuidv4() },
+            { label: "Cpus", routeTo: "/cpus-cards", id: uuidv4() },
+            { label: "Gpus", routeTo: "/gpus-cards", id: uuidv4() },
+            { label: "Rams", routeTo: "/rams-cards", id: uuidv4() },
+            { label: "Storages", routeTo: "/storages-cards", id: uuidv4() },
+            { label: "Computer Cases", routeTo: "/computer-cases-cards", id: uuidv4() },
+            { label: "Coolers", routeTo: "/coolers-cards", id: uuidv4() },
+            { label: "Power Supplies", routeTo: "/power-supplys-cards", id: uuidv4() },
+          ],
         },
-        {
-          icon: 'help',
-          label: 'Help',
-          routeTo: "",
-          subItems: [],
-        }
       ],
     }
   },
   computed: {
     activeMenu() {
-      if(this.securityStore.role === "ROLE_USER") {
-        return this.menuListUser;
+      if (this.securityStore.role === "ROLE_ADMIN") {
+        return this.menuListAdmin;
       }
-      return this.menuListAdmin;
+      return this.menuListUser;
     }
   },
   methods: {
     itemClicked(itemLabel) {
+      this.$emit("itemClicked");
       this.activeItem = itemLabel;
     },
+    subItemClicked() {
+      this.$emit("subItemClicked");
+    }
   }
 }
 </script>

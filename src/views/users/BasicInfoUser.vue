@@ -16,11 +16,15 @@ export default {
       default: function () {
         return {
           id: null,
+          password: null,
           principalId: null,
+          email: null,
+          username: null,
+          street: null,
+          postalCode: null,
           firstName: null,
           lastName: null,
-          email: null,
-          telephone: null,
+          phoneNumber: null,
         }
       }
     }

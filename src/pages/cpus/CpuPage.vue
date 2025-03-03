@@ -17,7 +17,8 @@
 
       <q-tab-panels v-model="tab" animated>
         <q-tab-panel name="cpuInfo" class="q-pa-none">
-          <basic-info-cpu :p-cpu="cpu" />
+          <basic-info-cpu v-if="securityStore.role === 'ROLE_ADMIN'" :p-cpu="cpu" />
+          <cpu-product-info v-else :p-cpu="cpu" />
         </q-tab-panel>
       </q-tab-panels>
     </q-card>
@@ -27,13 +28,16 @@
 import PageTitle from "components/general/PageTitle.vue";
 import apiClient from "src/lib/api-clients/api-client";
 import BasicInfoCpu from "src/views/cpus/BasicInfoCpu.vue";
+import CpuProductInfo from "src/views/cpus/CpuProductInfo.vue";
+import {useSecurityStore} from "stores/securityStore";
 
 export default {
-  components: {BasicInfoCpu, PageTitle},
+  components: {CpuProductInfo, BasicInfoCpu, PageTitle},
   data() {
     return {
       tab: "cpuInfo",
       cpu: null,
+      securityStore: useSecurityStore(),
     }
   },
   computed: {

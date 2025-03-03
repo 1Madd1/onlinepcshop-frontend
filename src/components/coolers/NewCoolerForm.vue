@@ -79,7 +79,6 @@
         </div>
 
         <div class="q-mb-sm q-pr-none q-pr-md-xs col-md-3 col-12">
-          <!--            :rules="rules.imageRule"-->
           <q-input
             v-model="cooler.image"
             outlined
@@ -92,11 +91,7 @@
           <q-checkbox v-model="hasSale" label="Has Sale" color="teal" />
         </div>
 
-        <div style="padding: 0.9%">
-          <q-checkbox v-model="cooler.waterCooled" label="Is water cooled" color="teal" />
-        </div>
-
-        <div v-if="hasSale" class="q-mb-sm q-pr-none q-pr-md-xs col-md-3 col-12">
+        <div v-if="hasSale" class="q-pr-none q-pr-md-xs col-md-3 col-12">
           <q-select
             outlined
             dense
@@ -104,6 +99,10 @@
             :rules="rules.saleTypeRule"
             :options="saleTypes"
             label="Sale Type" />
+        </div>
+
+        <div style="padding: 0.9%">
+          <q-checkbox v-model="cooler.waterCooled" label="Is water cooled" color="teal" />
         </div>
 
         <div>
@@ -115,7 +114,7 @@
   </div>
 </template>
 <script>
-import {Notify} from "quasar";
+import {date, Notify} from "quasar";
 import apiClient from "src/lib/api-clients/api-client";
 import {useSecurityStore} from "stores/securityStore";
 
@@ -134,6 +133,7 @@ export default {
           componentName: null,
           quantity: null,
           price: null,
+          dateOfCreation: null,
           currency: "RSD",
           socketType: null,
           tdp: null,
@@ -228,7 +228,6 @@ export default {
       return this.pEditMode && JSON.stringify(this.pCooler) === JSON.stringify(this.cooler);
     },
     legendText() {
-      // Srediti kod ostalih komponenata da pise veliko slovo
       return this.pEditMode ? "Cooler Info" : "Creating New Cooler";
     }
   },
@@ -245,6 +244,7 @@ export default {
   methods: {
     async addNewCooler(ignore = false) {
       this.checkSaleType();
+      this.cooler.dateOfCreation = date.formatDate(new Date(), 'YYYY-MM-DD');
       let cooler = await apiClient.request('post', '/cooler', null, this.cooler);
       if (cooler !== null) {
         Notify.create("Cooler " + cooler.componentName + " has been added!");
@@ -256,7 +256,7 @@ export default {
     async addAndClearForm() {
       await this.addNewCooler(true);
       this.clearData();
-      this.$refs.computerCaseForm.reset();
+      this.$refs.coolerForm.reset();
     },
     async updateCooler() {
       this.checkSaleType();
@@ -269,6 +269,8 @@ export default {
     clearData() {
       this.clearJsonObject(this.cooler);
       this.cooler.currency = "RSD";
+      this.hasSale = false;
+      this.cooler.waterCooled = false;
     },
     turnNumbersToString(jsonObject) {
       for (const key in jsonObject) {

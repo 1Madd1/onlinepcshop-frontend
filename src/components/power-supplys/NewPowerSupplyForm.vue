@@ -89,7 +89,6 @@
         </div>
 
         <div class="q-mb-sm q-pr-none q-pr-md-xs col-md-3 col-12">
-          <!--            :rules="rules.imageRule"-->
           <q-input
             v-model="powerSupply.image"
             outlined
@@ -121,7 +120,7 @@
   </div>
 </template>
 <script>
-import {Notify} from "quasar";
+import {date, Notify} from "quasar";
 import apiClient from "src/lib/api-clients/api-client";
 import {useSecurityStore} from "stores/securityStore";
 
@@ -140,6 +139,7 @@ export default {
           componentName: null,
           quantity: null,
           price: null,
+          dateOfCreation: null,
           currency: "RSD",
           wattage: null,
           color: null,
@@ -241,7 +241,6 @@ export default {
       return this.pEditMode && JSON.stringify(this.pPowerSupply) === JSON.stringify(this.powerSupply);
     },
     legendText() {
-      // Srediti kod ostalih komponenata da pise veliko slovo
       return this.pEditMode ? "Power Supply Info" : "Creating New Power Supply";
     }
   },
@@ -258,6 +257,7 @@ export default {
   methods: {
     async addNewPowerSupply(ignore = false) {
       this.checkSaleType();
+      this.powerSupply.dateOfCreation = date.formatDate(new Date(), 'YYYY-MM-DD');
       let powerSupply = await apiClient.request('post', '/power-supply', null, this.powerSupply);
       if (powerSupply !== null) {
         Notify.create("Power supply " + powerSupply.componentName + " has been added!");
@@ -269,7 +269,7 @@ export default {
     async addAndClearForm() {
       await this.addNewPowerSupply(true);
       this.clearData();
-      this.$refs.computerCaseForm.reset();
+      this.$refs.powerSupplyForm.reset();
     },
     async updatePowerSupply() {
       this.checkSaleType();
@@ -282,6 +282,7 @@ export default {
     clearData() {
       this.clearJsonObject(this.powerSupply);
       this.powerSupply.currency = "RSD";
+      this.hasSale = false;
     },
     turnNumbersToString(jsonObject) {
       for (const key in jsonObject) {

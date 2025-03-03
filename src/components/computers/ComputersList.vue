@@ -25,13 +25,11 @@
 </template>
 <script>
 import apiClient from "src/lib/api-clients/api-client";
-import {useSecurityStore} from "stores/securityStore";
 
 export default {
   data() {
     return {
       computers: [],
-      securityStore: useSecurityStore(),
       columns: [
         {name: "computerName", label: "Name", field: "computerName", align: "left"},
         {name: "quantity", label: "Quantity", field: "quantity", align: "left"},

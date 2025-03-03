@@ -100,7 +100,6 @@
         </div>
 
         <div class="q-mb-sm q-pr-none q-pr-md-xs col-md-3 col-12">
-          <!--            :rules="rules.imageRule"-->
           <q-input
             v-model="ram.image"
             outlined
@@ -132,7 +131,7 @@
   </div>
 </template>
 <script>
-import {Notify} from "quasar";
+import {date, Notify} from "quasar";
 import apiClient from "src/lib/api-clients/api-client";
 import {useSecurityStore} from "stores/securityStore";
 
@@ -151,6 +150,7 @@ export default {
           componentName: null,
           quantity: null,
           price: null,
+          dateOfCreation: null,
           currency: "RSD",
           memoryType: null,
           ramSpeed: null,
@@ -269,6 +269,7 @@ export default {
   methods: {
     async addNewRam(ignore = false) {
       this.checkSaleType();
+      this.ram.dateOfCreation = date.formatDate(new Date(), 'YYYY-MM-DD');
       let ram = await apiClient.request('post', '/ram', null, this.ram);
       if (ram !== null) {
         Notify.create("Ram " + ram.componentName + " has been added!");
@@ -292,7 +293,9 @@ export default {
     },
     clearData() {
       this.clearJsonObject(this.ram);
+      this.ram.ramStorage = null;
       this.ram.currency = "RSD";
+      this.hasSale = false;
     },
     turnNumbersToString(jsonObject) {
       for (const key in jsonObject) {

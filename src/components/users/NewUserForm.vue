@@ -5,52 +5,82 @@
       </legend>
       <q-form ref="userForm" @submit.prevent="addOrUpdateButton.methodToInvoke">
 
-          <div class="q-mb-sm q-pr-none q-pr-md-xs col-md-3 col-12">
-            <q-input
-              v-model="user.firstName"
-              outlined
-              label="First Name"
-              dense
-              :rules="rules.firstNameRule"
-            />
-          </div>
+        <div class="q-mb-sm q-pr-none q-pr-md-xs col-md-3 col-12">
+          <q-input
+            v-model="user.firstName"
+            outlined
+            label="First Name"
+            dense
+            :rules="rules.firstNameRule"
+          />
+        </div>
 
-          <div class="q-mb-sm q-pr-none q-pr-md-xs col-md-3 col-12">
-            <q-input
-              v-model="user.lastName"
-              outlined
-              label="Last Name"
-              dense
-              :rules="rules.lastNameRule"
-            />
-          </div>
+        <div class="q-mb-sm q-pr-none q-pr-md-xs col-md-3 col-12">
+          <q-input
+            v-model="user.lastName"
+            outlined
+            label="Last Name"
+            dense
+            :rules="rules.lastNameRule"
+          />
+        </div>
 
-          <div class="q-mb-sm q-pr-none q-pr-md-xs col-md-3 col-12">
-            <q-input
-              v-model="user.email"
-              outlined
-              label="eMail"
-              dense
-              :rules="rules.emailRule"
-            />
-          </div>
+        <div class="q-mb-sm q-pr-none q-pr-md-xs col-md-3 col-12">
+          <q-input
+            v-model="user.email"
+            outlined
+            label="eMail"
+            dense
+            :rules="rules.emailRule"
+          />
+        </div>
 
-<!--          TODO: check existing phone number validation library -->
-          <div class="q-mb-sm q-pr-none q-pr-md-xs col-md-3 col-12">
-            <q-input
-              filled
-              v-model="user.telephone"
-              label="Phone Number"
-              mask="(###) ### - ####"
-              hint="Mask: (###) ### - ####"
-              outlined
-              dense
-              :rules="rules.telephoneRule"
-            />
-          </div>
-        <div>
-          <q-btn :label="addOrUpdateButton.displayText" class="q-mr-sm " type="submit" color="primary" :disable="updateButtonDisabled"/>
-          <q-btn v-if="!pEditMode" :label="addAndNewFormButtonDisplayText" class="q-mr-sm" type="button" color="primary" @click="addAndClearForm" />
+        <div class="q-mb-sm q-pr-none q-pr-md-xs col-md-3 col-12">
+          <q-input
+            v-model="user.username"
+            outlined
+            label="Username"
+            dense
+            :rules="rules.usernameRule"
+          />
+        </div>
+
+        <div class="q-mb-sm q-pr-none q-pr-md-xs q-pb-md col-md-3 col-12">
+          <q-input
+            v-model="user.street"
+            outlined
+            label="Street"
+            dense
+          />
+        </div>
+
+        <div class="q-mb-sm q-pr-none q-pr-md-xs q-pb-md col-md-3 col-12">
+          <q-input
+            v-model="user.postalCode"
+            outlined
+            label="Postal Code"
+            dense
+          />
+        </div>
+
+        <div class="q-mb-sm q-pr-none q-pr-md-xs q-pb-md col-md-3 col-12">
+          <q-input
+            v-model="user.phoneNumber"
+            label="Phone Number"
+            mask="(###) ### - ####"
+            type="tel"
+            fill-mask
+            hint="Mask: (###) ### - ####"
+            :rules="rules.telephoneRule"
+            outlined
+            dense
+          />
+        </div>
+        <div style="padding-left: 1.1vw">
+          <q-btn :label="addOrUpdateButton.displayText" class="q-mr-sm " type="submit" color="primary"
+                 :disable="updateButtonDisabled"/>
+          <q-btn v-if="!pEditMode" :label="addAndNewFormButtonDisplayText" class="q-mr-sm" type="button" color="primary"
+                 @click="addAndClearForm"/>
         </div>
       </q-form>
     </fieldset>
@@ -75,9 +105,13 @@ export default {
           id: null,
           principalId: null,
           email: null,
+          username: null,
+          street: null,
+          postalCode: null,
           firstName: null,
           lastName: null,
-          telephone: null,
+          phoneNumber: null,
+          password: null,
         }
       }
     }
@@ -88,7 +122,9 @@ export default {
       user: JSON.parse(JSON.stringify(this.pUser)),
       addOrUpdateButton: {
         displayText: this.pEditMode ? "Edit" : "Add",
-        methodToInvoke: this.pEditMode ? this.updateUser : () => {this.addNewUser()},
+        methodToInvoke: this.pEditMode ? this.updateUser : () => {
+          this.addNewUser()
+        },
       },
       addAndNewFormButtonDisplayText: "Add & Continue on New Form",
       rules: {
@@ -101,8 +137,17 @@ export default {
         lastNameRule: [
           (val) => val !== null && val.length > 0 || "Insert valid last Name!"
         ],
+        usernameRule: [
+          (val) => val !== null && val.length > 0 && val.length < 16 || "Insert valid username!"
+        ],
         telephoneRule: [
-          (val) => val !== null && val.length > 0 || "Insert valid last Name!"
+          (val) => {
+            if (this.validatePhoneNumber(val)) {
+              return true;
+            } else {
+              return "Insert valid telephone number!"
+            }
+          }
         ],
       },
     }
@@ -113,13 +158,20 @@ export default {
     },
     legendText() {
       return this.pEditMode ? "User info" : "Creating new User";
-    }
+    },
   },
-  created() {
-
+  mounted() {
   },
   methods: {
+    validatePhoneNumber(input) {
+      if (input === undefined || input === null || input === "(___) ___ - ____") {
+        return true;
+      }
+      const regex = /^\(\d{3}\)(?: \d{3} - \d{4}|\d{3} - \d{4})$/;
+      return regex.test(input);
+    },
     async addNewUser(ignore = false) {
+      this.user.password = "password";
       let user = await apiClient.request('post', '/user', null, this.user);
       if (user !== null) {
         Notify.create("User " + user.firstName + " " + user.lastName + " has been added!");

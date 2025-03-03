@@ -1,11 +1,12 @@
 <template>
   <div v-if="checkComputerCase">
-    <page-title :p-title="'Computer Case - ' + computerCase.componentName" />
+    <page-title v-if="securityStore.role === 'ROLE_USER'" :p-title="'Computer Case - ' + computerCase.componentName" />
+    <page-title v-else :p-title="computerCase.componentName" />
     <q-card>
       <q-tabs
         v-model="tab"
         dense
-        class="text-grey"
+        class="text-grey bg-grey-4"
         active-color="primary"
         indicator-color="primary"
         align="justify"
@@ -17,7 +18,8 @@
 
       <q-tab-panels v-model="tab" animated>
         <q-tab-panel name="computerCaseInfo" class="q-pa-none">
-          <basic-info-computer-case :p-computer-case="computerCase" />
+          <basic-info-computer-case v-if="securityStore.role === 'ROLE_ADMIN'" :p-computer-case="computerCase" />
+          <computer-case-product-info v-else :p-computer-case="computerCase" />
         </q-tab-panel>
       </q-tab-panels>
     </q-card>
@@ -27,13 +29,16 @@
 import PageTitle from "components/general/PageTitle.vue";
 import apiClient from "src/lib/api-clients/api-client";
 import BasicInfoComputerCase from "src/views/computer-cases/BasicInfoComputerCase.vue";
+import {useSecurityStore} from "stores/securityStore";
+import ComputerCaseProductInfo from "src/views/computer-cases/ComputerCaseProductInfo.vue";
 
 export default {
-  components: {BasicInfoComputerCase, PageTitle},
+  components: {ComputerCaseProductInfo, BasicInfoComputerCase, PageTitle},
   data() {
     return {
       tab: "computerCaseInfo",
       computerCase: null,
+      securityStore: useSecurityStore(),
     }
   },
   computed: {
